@@ -26,6 +26,8 @@
     <Compile Include="Bootstrap.cs" />
     <Compile Include="Extensions\AbilityExtensions.cs" />
     <Compile Include="Extensions\EntityExtensions.cs" />
+    <Compile Include="Extensions\EnumerableExtensions.cs" />
+    <Compile Include="Extensions\HeroExtensions.cs" />
     <Compile Include="Extensions\SharpDXExtensions.cs" />
     <Compile Include="Extensions\UnitExtensions.cs" />
     <Compile Include="Extensions\Vector2Extensions.cs" />
@@ -46,6 +48,19 @@
     <Compile Include="Managers\Update\UpdateHandler.cs" />
     <Compile Include="Managers\Update\UpdateManager.cs" />
     <Compile Include="Managers\Update\UpdateSynchronizationContext.cs" />
+    <Compile Include="Orbwalker\OrbwalkerManager.cs" />
+    <Compile Include="Prediction\HitChance.cs" />
+    <Compile Include="Prediction\IPrediction.cs" />
+    <Compile Include="Prediction\Collision\Collision.cs" />
+    <Compile Include="Prediction\Collision\CollisionObject.cs" />
+    <Compile Include="Prediction\Collision\CollisionResult.cs" />
+    <Compile Include="Prediction\Collision\CollisionTypes.cs" />
+    <Compile Include="Prediction\MEC.cs" />
+    <Compile Include="Prediction\Prediction.cs" />
+    <Compile Include="Prediction\PredictionInput.cs" />
+    <Compile Include="Prediction\PredictionManager.cs" />
+    <Compile Include="Prediction\PredictionOutput.cs" />
+    <Compile Include="Prediction\PredictionSkillshotType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -59,16 +74,21 @@
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Output\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\Output\References\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="SharpDX.Mathematics, Version=4.2.0.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Output\SharpDX.Mathematics.dll</HintPath>
+      <HintPath>..\Output\References\SharpDX.Mathematics.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Runtime.Serialization" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\Divine.Zero\Divine.Zero.csproj">
+      <Project>{65C10692-FA73-4303-A44C-1FC1B453AD22}</Project>
+      <Name>Divine.Zero</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -103,6 +103,21 @@ namespace Divine.SDK.Extensions
             return Vector3.Distance(vector3, toVector4.ToVector3());
         }
 
+        public static float Distance2D(this Vector3 vector3, Vector3 toVector3)
+        {
+            return vector3.ToVector2().Distance(toVector3);
+        }
+
+        public static float Distance2D(this Vector3 vector3, Vector2 toVector2)
+        {
+            return vector3.ToVector2().Distance(toVector2);
+        }
+
+        public static float Distance2D(this Vector3 vector3, Vector4 toVector4)
+        {
+            return vector3.ToVector2().Distance(toVector4);
+        }
+
         public static float DistanceSquared(this Vector3 vector3, Vector3 toVector3)
         {
             return Vector3.DistanceSquared(vector3, toVector3);

@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
+using Divine.SDK.Managers.Log;
+
 using SharpDX;
 
 namespace Divine.SDK.Extensions
@@ -20,20 +22,19 @@ namespace Divine.SDK.Extensions
             return networkName.Substring("CDOTA_Unit_".Length).Replace("_", string.Empty);
         }
 
-        /*public static float AttackPoint(this Unit unit)
+        public static float AttackPoint(this Unit unit)
         {
             try
             {
-                var attackAnimationPoint = Game.FindKeyValues($"{unit.Name}/AttackAnimationPoint", unit is Hero ? KeyValueSource.Hero : KeyValueSource.Unit).FloatValue;
-
-                return attackAnimationPoint / (1 + ((unit.AttackSpeedValue() - 100) / 100));
+                var attackAnimationPoint = ((unit is Hero) ? Hero.GetKeyValueByName(unit.Name) : Unit.GetKeyValueByName(unit.Name)).GetKeyValue("AttackAnimationPoint").GetSingle();
+                return attackAnimationPoint / (1f + ((unit.AttackSpeedValue() - 100f) / 100f));
             }
-            catch (KeyValuesNotFoundException)
+            catch
             {
-                Log.Warn($"Missing AttackAnimationPoint for {unit.Name}");
+                LogManager.Warn($"Missing AttackAnimationPoint for {unit.Name}");
                 return 0;
             }
-        }*/
+        }
 
         public static Modifier GetModifierByName(this Unit unit, string name)
         {
@@ -332,7 +333,7 @@ namespace Divine.SDK.Extensions
             return damage * mult;
         }
 
-        /*public static float GetAutoAttackArrivalTime(this Unit source, Unit target, bool takeRotationTimeIntoAccount = true)
+        public static float GetAutoAttackArrivalTime(this Unit source, Unit target, bool takeRotationTimeIntoAccount = true)
         {
             var result = GetProjectileArrivalTime(source, target, source.AttackPoint(), source.IsMelee ? float.MaxValue : source.ProjectileSpeed(), takeRotationTimeIntoAccount);
 
@@ -342,7 +343,7 @@ namespace Divine.SDK.Extensions
             }
 
             return result;
-        }*/
+        }
 
         public static Item GetItemById(this Unit unit, AbilityId abilityId)
         {
@@ -354,7 +355,7 @@ namespace Divine.SDK.Extensions
             return unit.Inventory.Items.FirstOrDefault(x => x != null && x.IsValid && x.Id == abilityId);
         }
 
-        /*public static float GetProjectileArrivalTime(this Unit source, Unit target, float delay, float missileSpeed, bool takeRotationTimeIntoAccount = true)
+        public static float GetProjectileArrivalTime(this Unit source, Unit target, float delay, float missileSpeed, bool takeRotationTimeIntoAccount = true)
         {
             var result = 0f;
 
@@ -371,7 +372,7 @@ namespace Divine.SDK.Extensions
             }
 
             return result;
-        }*/
+        }
 
         public static float GetSpellAmplification(this Unit source)
         {
@@ -383,40 +384,56 @@ namespace Divine.SDK.Extensions
                 spellAmp += hero.TotalIntelligence * 0.07f / 100f;
             }
 
-            var kaya = source.GetItemById(AbilityId.item_kaya);
-            if (kaya != null)
-            {
-                spellAmp += kaya.AbilitySpecialData.First(x => x.Name == "spell_amp").Value / 100.0f;
-            }
+            var kaya = false;
+            var yashaAndKaya = false;
+            var kayaAndSange = false;
 
-            var yashaAndKaya = source.GetItemById(AbilityId.item_yasha_and_kaya);
-            if (yashaAndKaya != null)
+            foreach (var item in source.Inventory.Items)
             {
-                spellAmp += yashaAndKaya.AbilitySpecialData.First(x => x.Name == "spell_amp").Value / 100.0f;
-            }
+                switch (item.Id)
+                {
+                    case AbilityId.item_null_talisman:
+                        {
+                            spellAmp += item.AbilitySpecialData.First(x => x.Name == "bonus_spell_amp").Value / 100.0f;
+                        }
+                        break;
 
-            var kayaAndSange = source.GetItemById(AbilityId.item_kaya_and_sange);
-            if (kayaAndSange != null)
-            {
-                spellAmp += kayaAndSange.AbilitySpecialData.First(x => x.Name == "spell_amp").Value / 100.0f;
-            }
+                    case AbilityId.item_kaya:
+                        {
+                            if (kaya)
+                            {
+                                break;
+                            }
 
-            var trident = source.GetItemById(AbilityId.item_trident);
-            if (trident != null)
-            {
-                spellAmp += trident.AbilitySpecialData.First(x => x.Name == "spell_amp").Value / 100.0f;
-            }
+                            kaya = true;
+                            spellAmp += item.AbilitySpecialData.First(x => x.Name == "spell_amp").Value / 100.0f;
+                        }
+                        break;
 
-            var netherShawl = source.GetItemById(AbilityId.item_nether_shawl);
-            if (netherShawl != null)
-            {
-                spellAmp += netherShawl.AbilitySpecialData.First(x => x.Name == "bonus_spell_amp").Value / 100.0f;
-            }
+                    case AbilityId.item_yasha_and_kaya:
+                        {
+                            if (yashaAndKaya)
+                            {
+                                break;
+                            }
 
-            var timelessRelic = source.GetItemById(AbilityId.item_timeless_relic);
-            if (timelessRelic != null)
-            {
-                spellAmp += timelessRelic.AbilitySpecialData.First(x => x.Name == "spell_amp").Value / 100.0f;
+                            yashaAndKaya = true;
+                            spellAmp += item.AbilitySpecialData.First(x => x.Name == "spell_amp").Value / 100.0f;
+                        }
+                        break;
+
+                    case AbilityId.item_kaya_and_sange:
+                        {
+                            if (kayaAndSange)
+                            {
+                                break;
+                            }
+
+                            kayaAndSange = true;
+                            spellAmp += item.AbilitySpecialData.First(x => x.Name == "spell_amp").Value / 100.0f;
+                        }
+                        break;
+                }
             }
 
             var talent = source.Spellbook.Spells.FirstOrDefault(x => x.Level > 0 && x.Name.StartsWith("special_bonus_spell_amplify_"));
@@ -453,49 +470,10 @@ namespace Divine.SDK.Extensions
             return (float)unit.Health / unit.MaximumHealth;
         }
 
-        /*public static float ImmobileDuration(this Unit unit)
-        {
-            var result = 0f;
-            Modifier relevantModifier = null;
-            foreach (var modifier in unit.Modifiers)
-            {
-                if (!modifier.IsStunDebuff && !DisableModifiers.Contains(modifier.Name))
-                {
-                    continue;
-                }
-
-                var remainingTime = modifier.RemainingTime;
-                if (remainingTime <= result)
-                {
-                    continue;
-                }
-
-                relevantModifier = modifier;
-                result = remainingTime;
-            }
-
-            if (result == 0)
-            {
-                return 0;
-            }
-
-            if (relevantModifier.Name == "modifier_eul_cyclone" || relevantModifier.Name == "modifier_invoker_tornado")
-            {
-                result += 0.07f;
-            }
-
-            return result;
-        }*/
-
         public static Vector3 InFront(this Unit unit, float distance)
         {
             var v = unit.Position + (unit.Vector3FromPolarAngle() * distance);
             return new Vector3(v.X, v.Y, 0);
-        }
-
-        public static bool IsAlly(this Unit unit, Unit target)
-        {
-            return unit.Team == target.Team;
         }
 
         public static bool IsAttackImmune(this Unit unit)
@@ -666,7 +644,7 @@ namespace Divine.SDK.Extensions
         }
 
         public static IEnumerable<TEntity> GetEnemiesInRange<TEntity>(this Unit unit, float range)
-            where TEntity : Unit, new()
+            where TEntity : Unit
         {
             var handle = unit.Handle;
             var team = unit.Team;
@@ -725,28 +703,28 @@ namespace Divine.SDK.Extensions
             return true;
         }
 
-        /*public static float ProjectileSpeed(this Unit unit)
+        public static float ProjectileSpeed(this Unit unit)
         {
             try
             {
-                return Game.FindKeyValues($"{unit.Name}/ProjectileSpeed", unit is Hero ? KeyValueSource.Hero : KeyValueSource.Unit).IntValue;
+                return Unit.GetKeyValueByName(unit.Name).GetKeyValue("ProjectileSpeed").GetInt32();
             }
-            catch (KeyValuesNotFoundException)
+            catch
             {
-                Log.Warn($"Missing ProjectileSpeed for {unit.Name}");
+                LogManager.Warn($"Missing ProjectileSpeed for {unit.Name}");
                 return 0;
             }
-        }*/
+        }
 
-        /*public static float TurnRate(this Unit unit, bool currentTurnRate = true)
+        public static float TurnRate(this Unit unit, bool currentTurnRate = true)
         {
             float turnRate;
             
             try
             {
-                turnRate = Game.FindKeyValues($"{unit.Name}/MovementTurnRate", unit is Hero ? KeyValueSource.Hero : KeyValueSource.Unit).FloatValue;
+                turnRate =  Unit.GetKeyValueByName(unit.Name).GetKeyValue("MovementTurnRate").GetSingle();
             }
-            catch (KeyValuesNotFoundException)
+            catch
             {
                 // Log.Warn($"Missing MovementTurnRate for {unit.Name}");
                 turnRate = 0.5f;
@@ -766,9 +744,9 @@ namespace Divine.SDK.Extensions
             }
 
             return turnRate;
-        }*/
+        }
 
-        /*public static float TurnTime(this Unit unit, Vector3 position)
+        public static float TurnTime(this Unit unit, Vector3 position)
         {
             return TurnTime(unit, unit.FindRotationAngle(position));
         }
@@ -780,18 +758,13 @@ namespace Divine.SDK.Extensions
 
         public static float TurnTime(this Unit unit, float angle)
         {
-            if ((unit as Hero)?.HeroId == HeroId.npc_dota_hero_wisp)
-            {
-                return 0;
-            }
-
             if (angle <= 0.2f)
             {
                 return 0;
             }
 
             return (0.03f / unit.TurnRate()) * angle;
-        }*/
+        }
 
         public static Vector2 Vector2FromPolarAngle(this Unit unit, float delta = 0f, float radial = 1f)
         {

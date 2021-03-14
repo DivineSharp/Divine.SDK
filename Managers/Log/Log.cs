@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
@@ -8,8 +7,9 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-using Divine.SDK.Helpers;
+using Divine.Zero.Helpers;
 
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Divine.SDK.Managers.Log
@@ -39,10 +39,20 @@ namespace Divine.SDK.Managers.Log
 
         public Log()
         {
-            HttpClient = new HttpClient
+            HttpClient = new HttpClient();
+
+            try
             {
-                BaseAddress = new Uri("http://84.38.183.219:5003")
-            };
+                var mainLoaderConfigFile = Path.Combine(Directories.Config, "config.json");
+                if (File.Exists(mainLoaderConfigFile))
+                {
+                    var mainLoaderConfig = JsonConvert.DeserializeObject<JToken>(File.ReadAllText(mainLoaderConfigFile));
+                    HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", (string)mainLoaderConfig?["Token"]);
+                }
+            }
+            catch
+            {
+            }
 
             HttpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         }
@@ -102,9 +112,12 @@ namespace Divine.SDK.Managers.Log
 
         private void Write(LogLevel logLevel, string message)
         {
-            Console.ForegroundColor = Colors[logLevel];
-            Console.WriteLine(string.Format("{0:HH:mm:ss} | {1,-5} | {2}", DateTime.Now, logLevel.ToString().ToUpper(), message));
-            Console.ResetColor();
+            lock(this)
+            {
+                Console.ForegroundColor = Colors[logLevel];
+                Console.WriteLine(string.Format("{0:HH:mm:ss} | {1,-5} | {2}", DateTime.Now, logLevel.ToString().ToUpper(), message));
+                Console.ResetColor();
+            }
         }
 
         private void SentryCaptureException(Exception e)
@@ -125,7 +138,7 @@ namespace Divine.SDK.Managers.Log
                 });
             });*/
 
-            var callingAssembly = Assembly.GetCallingAssembly();
+            var callingAssembly = Assembly.GetExecutingAssembly();
 
             Task.Run(async () =>
             {
@@ -139,7 +152,8 @@ namespace Divine.SDK.Managers.Log
                 };
 
                 var stringContent = new StringContent(jObject.ToString(), Encoding.UTF8, "application/json");
-                await HttpClient.PostAsync("Log", stringContent);
+                await HttpClient.PostAsync("http://84.38.183.219:5003/Log", stringContent);
+                
             });
         }
 
@@ -175,7 +189,7 @@ namespace Divine.SDK.Managers.Log
                 };
 
                 var stringContent = new StringContent(jObject.ToString(), Encoding.UTF8, "application/json");
-                await HttpClient.PostAsync("Log", stringContent);
+                await HttpClient.PostAsync("http://84.38.183.219:5003/Log", stringContent);
             });
         }
 

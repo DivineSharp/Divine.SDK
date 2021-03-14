@@ -1,33 +1,33 @@
-﻿using System;
+﻿//using System;
 
-namespace Divine.SDK.Managers.Update
-{
-    public class InvokeHandler
-    {
-        private static InvokeHandler instance;
+//namespace Divine.SDK.Managers.Update
+//{
+//    public class InvokeHandler
+//    {
+//        private static InvokeHandler instance;
 
-        public static InvokeHandler Default
-        {
-            get
-            {
-                if (instance == null)
-                {
-                    instance = new InvokeHandler();
-                }
+//        public static InvokeHandler Default
+//        {
+//            get
+//            {
+//                if (instance == null)
+//                {
+//                    instance = new InvokeHandler();
+//                }
 
-                return instance;
-            }
-        }
+//                return instance;
+//            }
+//        }
 
-        public virtual bool Invoke(Action callback)
-        {
-            callback.Invoke();
-            return true;
-        }
+//        public virtual bool Invoke(Action callback)
+//        {
+//            callback.Invoke();
+//            return true;
+//        }
 
-        public override string ToString()
-        {
-            return "Handler";
-        }
-    }
-}
+//        public override string ToString()
+//        {
+//            return "Handler";
+//        }
+//    }
+//}

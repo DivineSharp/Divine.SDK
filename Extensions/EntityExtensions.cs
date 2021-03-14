@@ -36,5 +36,10 @@ namespace Divine.SDK.Extensions
         {
             return source.Position.IsInRange(targetPosition, range);
         }
+
+        public static bool IsAlly(this Entity source, Entity target)
+        {
+            return source.Team == target.Team;
+        }
     }
 }

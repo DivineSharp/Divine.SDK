@@ -62,18 +62,12 @@ namespace Divine.SDK.Extensions
                 return 0;
             }
 
-            var level = ability.Level;
-            if (level == 0)
-            {
-                return 0;
-            }
-
             if (ability.OverrideCastPoint != -1)
             {
                 return 0.1f;
             }
 
-            return ability.GetCastPoint(level - 1); //TODO
+            return ability.CastPoint;
         }
 
         public static float GetCastRange(this Ability ability)
